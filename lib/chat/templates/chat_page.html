@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+
+    <head>
+        <title> CryptoChat </title>
+
+        <script type='text/javascript' src={{ url_for('chat.static', filename='chat.js') }}> </script>
+    </head>
+
+    <body>
+        <div id='message_history' class='message_history'> </div>
+
+        <div>
+            <input type='button' value='Send' onclick='post_message()'>
+            <textarea id='message_field' autofocus placeholder='Enter your message...'> </textarea>
+        </div>
+    </body>
+
+</html>
