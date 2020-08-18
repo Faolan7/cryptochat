@@ -6,4 +6,4 @@ startup module
 '''
 
 #pylint: disable=unused-import
-from lib import create_app
+from cryptochat import create_app
