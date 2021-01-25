@@ -2,17 +2,34 @@
 <html>
 
     <head>
-        <title> CryptoChat </title>
+        <title>CryptoChat</title>
 
         <script type='text/javascript' src={{ url_for('chat.static', filename='chat.js') }}> </script>
+        <script type='text/javascript' src={{ url_for('chat.static', filename='cipher.js') }}> </script>
     </head>
 
     <body>
-        <div id='message_history' class='message_history'> </div>
+        <div id='message_history'></div>
 
         <div>
             <input type='button' value='Send' onclick='post_message()'>
-            <textarea id='message_field' autofocus placeholder='Enter your message...'> </textarea>
+            <textarea id='message_field' autofocus placeholder='Enter your message...'></textarea>
+        </div>
+
+        <div>
+            <h3>Outgoing Key</h3>
+            <p>
+                Cipher:
+                <select id='outgoing_cipher' onchange='update_cipher_options(this)'></select>
+                <input id='outgoing_key' type='text' style='display:none;'>
+            </p>
+
+            <h3>Incoming Key</h3>
+            <p>
+                Cipher:
+                <select id='incoming_cipher' onchange='update_cipher_options(this)'></select>
+                <input id='incoming_key' type='text' style='display:none;'>
+            </p>
         </div>
     </body>
 
