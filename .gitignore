@@ -1,0 +1,12 @@
+# Python files
+.venv/
+__pycache__/
+
+# Editor files
+.vscode/
+
+# OS files
+.DS_Store
+
+# User files
+__*
