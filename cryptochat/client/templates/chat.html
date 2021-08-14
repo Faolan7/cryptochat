@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+    <title>Cryptochat</title>
+
+    <link rel="stylesheet" href={{ url_for('client.static', filename='chat.css') }}>
+
+    <script type="text/javascript" src={{ url_for('client.static', filename='cipher.js') }}></script>
+    <script type="text/javascript" src={{ url_for('client.static', filename='chat.js') }}></script>
+</head>
+
+<body>
+    <aside>
+        <h2> Incoming </h2>
+        <p>
+            <select id="incoming-cipher" onchange="incoming_cipher.select_option(this.value);"></select> <br>
+            <input id="incoming-key" type="text" class="hidden" placeholder="shift (int or char)">
+        </p>
+        <button id="incoming-refresh" type="button" onclick="save_incoming_settings();"> Refresh Chat </button>
+        <p id="incoming-error" class="error hidden">blank</p>
+
+        <h2> Outgoing </h2>
+        <p>
+            <select id="outgoing-cipher" onchange="outgoing_cipher.select_option(this.value);"></select> <br>
+            <input id="outgoing-key" type="text" class="hidden" placeholder="shift (int or char)">
+        </p>
+        <p id="outgoing-error" class="error hidden">blank</p>
+    </aside>
+
+    <section>
+        <div id="message-history" class="message-history"></div>
+
+        <div class="message-entry">
+            <textarea id="message-field" class="message-field" cols="10" autofocus placeholder="Enter your message..."></textarea>
+            <button type="button" class="message-button" onclick="send_message();"> Send </button>
+        </div>
+    </section>
+</body>
+</html>
