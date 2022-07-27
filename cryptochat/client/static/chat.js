@@ -1,3 +1,13 @@
+const ERROR_DURATION = 2000;
+
+var message_history;
+var message_submit;
+var incoming_cipher;
+var outgoing_cipher;
+var refresh_button;
+var message_count = 0;
+
+
 class CipherSettings
 {
     constructor(direction)
@@ -10,7 +20,7 @@ class CipherSettings
         this.key = null;
     }
 
-    encrypt = (plaintext) => this.cipher.encrypt(plaintext, this.key);
+    encrypt = (plaintext) => this.cipher.encrypt(sanitize_text(plaintext), this.key);
     decrypt = (plaintext) => this.cipher.decrypt(plaintext, this.key);
 
     add_option(cipher)
@@ -59,24 +69,16 @@ class CipherSettings
         clearTimeout(this.error_timeout);
         this.error_timeout = setTimeout(() =>
         {
-            console.log('woah!');
             this.error_element.classList.add('hidden');
-        }, 2000);
+        }, ERROR_DURATION);
     }
 }
 
 
-var message_field;
-var message_history;
-var incoming_cipher;
-var outgoing_cipher;
-var refresh_button;
-
-
 window.addEventListener('load', () =>
 {
-    message_history = document.getElementById('message-history');
-    message_field = document.getElementById('message-field');
+    message_history = document.getElementsByTagName('article')[0];
+    message_submit = document.getElementById('message-submit');
     incoming_cipher = new CipherSettings('incoming');
     outgoing_cipher = new CipherSettings('outgoing');
     refresh_button = document.getElementById('incoming-refresh');
@@ -89,24 +91,34 @@ window.addEventListener('load', () =>
 
     // Preparing messages
     update_message_history();
-    setInterval(update_message_history, 10000);
+    setInterval(update_message_history, CONFIG.MESSAGE_UPDATE_INTERVAL);
+});
+
+window.addEventListener('keydown', (event) =>
+{
+    if (event.key == 'Enter' && !event.shiftKey) {
+        message_submit.click();
+        event.preventDefault();
+    }
 });
 
 
-async function send_message()
+async function send_message(form)
 {
-    if (!outgoing_cipher.save()) {
+    form_data = new FormData(form);
+    if (!outgoing_cipher.save() || form_data.get('message') == '') {
+        form.elements['message'].focus()
         return;
     }
 
     // Creating payload
     let message = {
-        text: outgoing_cipher.encrypt(message_field.value.trim())
+        text: outgoing_cipher.encrypt(form_data.get('message').trim())
     };
 
-    // Resetting message field
-    message_field.value = '';
-    message_field.focus();
+    // Resetting form
+    form.reset();
+    form.elements['message'].focus()
 
     // Sending message
     await fetch('/api/message', {
@@ -118,32 +130,40 @@ async function send_message()
     update_message_history();
 }
 
-async function update_message_history()
+async function update_message_history(reset=false)
 {
     // Getting messages
-    let response = await fetch('/api/message');
+    let response = await fetch('/api/message?' + new URLSearchParams({
+        '$skip': reset ? 0 : message_count
+    }));
     let messages = await response.json();
 
-    // Clearing message history
-    message_history.innerHTML = '';
-
     // Displaying messages
+    if (reset) {
+        message_history.innerHTML = '';
+        message_count = 0;
+    }
+
     let body;
     for (let message of messages) {
-        body = incoming_cipher.decrypt(message);
+        message_count += 1
+        body = incoming_cipher.decrypt(message).replaceAll('\n', '<br>');
         message_history.innerHTML += `<p> ${body} </p>`;
     };
+
+    // Autoscrolling
+    message_history.scrollTop = message_history.scrollHeight;
 }
 
 function save_incoming_settings()
 {
     if (incoming_cipher.save()) {
         refresh_button.disabled = true;
-        update_message_history();
+        update_message_history(true);
 
         setTimeout(() =>
         {
             refresh_button.disabled = false;
-        }, 5000);
+        }, CONFIG.KEY_UPDATE_COOLDOWN);
     }
 }
